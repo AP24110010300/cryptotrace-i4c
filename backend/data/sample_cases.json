@@ -1,0 +1,44 @@
+[
+  {
+    "case_id": "CT-2026-0948",
+    "complainant_name": "Ramesh Chandra Sharma",
+    "phone_number": "+91-98765-43210",
+    "ncrp_acknowledgement": "1930-2026-AUG-0948",
+    "fir_number": "FIR-2026/CYBER/409",
+    "crime_category": "Telegram Part-Time Task & Investment Fraud",
+    "victim_wallet": "TXqHx87KmN3vL8p2Qw5kR1m9xP4y8n2m7f",
+    "suspect_wallet": "TR8nh2K1m9xP4y8n2m7fB3dL1jV5xK8rT6",
+    "stolen_amount": 45000.0,
+    "token": "USDT-TRC20",
+    "status": "TRACED",
+    "created_at": "2026-08-23T14:05:00Z"
+  },
+  {
+    "case_id": "CT-2026-1102",
+    "complainant_name": "Dr. Sunita Deshmukh",
+    "phone_number": "+91-98200-11223",
+    "ncrp_acknowledgement": "1930-2026-AUG-1102",
+    "fir_number": "FIR-2026/CYB-MUM/882",
+    "crime_category": "Digital Arrest / CBI Impersonation Extortion",
+    "victim_wallet": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    "suspect_wallet": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "stolen_amount": 7.5,
+    "token": "ETH",
+    "status": "TRACED",
+    "created_at": "2026-08-25T09:30:00Z"
+  },
+  {
+    "case_id": "CT-2026-1240",
+    "complainant_name": "Venkatesh Rao",
+    "phone_number": "+91-94480-55667",
+    "ncrp_acknowledgement": "1930-2026-SEP-1240",
+    "fir_number": "FIR-2026/BLR/CYB/312",
+    "crime_category": "Fake Pre-IPO Stock & Crypto Trading Application",
+    "victim_wallet": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+    "suspect_wallet": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy",
+    "stolen_amount": 1.25,
+    "token": "BTC",
+    "status": "PENDING_TRACE",
+    "created_at": "2026-09-01T16:20:00Z"
+  }
+]
