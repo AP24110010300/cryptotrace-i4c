@@ -419,13 +419,6 @@ export default function CleanModernSlateCommandCenter() {
             </span>
           </div>
 
-          <a
-            href="/preview"
-            className="text-xs font-mono text-[#9ca3af] hover:text-white border border-[#1f2937] px-3 py-1.5 rounded-lg hover:border-[#374151] transition-all"
-          >
-            UI Gallery
-          </a>
-
           <button
             onClick={handleExportJson}
             className="text-xs font-mono text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-3 py-1.5 rounded-lg hover:bg-[#06b6d4]/20 transition-all cursor-pointer"
