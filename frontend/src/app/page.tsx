@@ -225,6 +225,12 @@ const SCENARIOS: Record<string, CaseScenario> = {
   },
 };
 
+const SCENARIO_PRESETS: Record<string, string[]> = {
+  phishing: ["10,000", "25,000", "50,000", "100,000"],
+  ransomware: ["2.5", "5.0", "7.5", "15.0"],
+  investment: ["0.25", "0.5", "1.25", "3.0"],
+};
+
 export default function CleanModernSlateCommandCenter() {
   const [activeScenarioKey, setActiveScenarioKey] = useState<string>("phishing");
   const [currentCase, setCurrentCase] = useState<CaseScenario>(SCENARIOS.phishing);
@@ -253,28 +259,42 @@ export default function CleanModernSlateCommandCenter() {
     return () => clearInterval(interval);
   }, []);
 
-  // Dynamic Amount & Token synchronizer across nodes
-  const updateAmountAndNodes = (newAmountStr: string, tokenStr?: string) => {
+  // Dynamic Amount & Token synchronizer across nodes for ANY value in ALL 3 scenarios
+  const updateAmountAndNodes = (newAmountStr: string, tokenStr?: string, scenarioKey?: string) => {
+    const activeKey = scenarioKey || activeScenarioKey;
     const token = tokenStr !== undefined ? tokenStr : currentCase.token;
     const cleanNum = parseFloat(newAmountStr.replace(/,/g, "")) || 0;
 
-    const updatedNodes = currentCase.nodes.map((node, index) => {
-      let factor = 1.0;
-      if (index === 0 || index === 1) factor = 1.0;
-      else if (index === 2) factor = 0.95;
-      else if (index === 3) factor = 0.931;
+    // Peel percentages tailored to each scam typology:
+    // Phishing: 100% -> 100% -> 95% -> 93.1%
+    // Digital Arrest: 100% -> 100% -> 94.67% -> 93.07%
+    // Mixer Laundering: 100% -> 100% -> 96% -> 92.8%
+    let peelFactors = [1.0, 1.0, 0.95, 0.931];
+    if (activeKey === "ransomware") {
+      peelFactors = [1.0, 1.0, 0.9467, 0.9307];
+    } else if (activeKey === "investment") {
+      peelFactors = [1.0, 1.0, 0.96, 0.928];
+    }
 
+    const updatedNodes = currentCase.nodes.map((node, index) => {
+      const factor = peelFactors[index] ?? 1.0;
       const nodeVal = cleanNum > 0 ? cleanNum * factor : 0;
-      const formattedVal =
-        nodeVal >= 1000
-          ? Math.round(nodeVal).toLocaleString()
-          : nodeVal > 0
-          ? nodeVal.toFixed(nodeVal < 10 ? 2 : 1)
-          : "0";
+
+      let formattedVal = "0";
+      if (nodeVal >= 1000) {
+        formattedVal = nodeVal.toLocaleString("en-US", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+      } else if (nodeVal >= 10) {
+        formattedVal = (Math.round(nodeVal * 100) / 100).toString();
+      } else if (nodeVal > 0) {
+        formattedVal = (Math.round(nodeVal * 1000) / 1000).toString();
+      }
 
       return {
         ...node,
-        amount: `${formattedVal} ${token}`,
+        amount: newAmountStr.trim() === "" ? `0 ${token}` : `${formattedVal} ${token}`,
       };
     });
 
@@ -579,7 +599,7 @@ export default function CleanModernSlateCommandCenter() {
               {/* Quick Amount Preset Buttons */}
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                 <span className="text-[10px] font-mono text-[#6b7280]">Presets:</span>
-                {["10,000", "25,000", "50,000", "100,000"].map((preset) => (
+                {(SCENARIO_PRESETS[activeScenarioKey] || SCENARIO_PRESETS.phishing).map((preset) => (
                   <button
                     key={preset}
                     type="button"
@@ -590,10 +610,14 @@ export default function CleanModernSlateCommandCenter() {
                         : "bg-[#0b0f19] hover:bg-[#1f2937] text-[#9ca3af] hover:text-white border-[#374151]"
                     }`}
                   >
-                    {preset}
+                    {preset} {currentCase.token}
                   </button>
                 ))}
               </div>
+              <p className="text-[9px] font-mono text-[#6b7280] mt-1.5 flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs text-[#06b6d4]">info</span>
+                Type any custom value in the box &mdash; flowchart recalculates live!
+              </p>
             </div>
 
             {/* Scenario Presets */}
