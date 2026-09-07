@@ -1,4 +1,4 @@
-﻿"""
+"""
 CryptoTrace-I4C Blockchain API Client Layer  — Member 3
 Connects to live blockchain explorers: TronGrid (TRON), Etherscan (ETH), Blockstream (BTC).
 Auto-detects chain from wallet address format and routes to correct client.
@@ -19,7 +19,7 @@ TRONGRID_API_KEY  = os.getenv("TRONGRID_API_KEY", "")
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY", "")
 
 TRONGRID_BASE    = "https://api.trongrid.io"
-ETHERSCAN_BASE   = "https://api.etherscan.io/api"
+ETHERSCAN_BASE   = "https://api.etherscan.io/v2/api"
 BLOCKSTREAM_BASE = "https://blockstream.info/api"
 
 USDT_TRC20_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
@@ -42,7 +42,15 @@ class OnChainTransaction(BaseModel):
 
 class TronGridClient:
     def __init__(self):
-        self.headers = {"TRON-PRO-API-KEY": TRONGRID_API_KEY, "Accept": "application/json"}
+        pass
+
+    @property
+    def headers(self) -> dict:
+        key = os.getenv("TRONGRID_API_KEY", "")
+        headers = {"Accept": "application/json"}
+        if key:
+            headers["TRON-PRO-API-KEY"] = key
+        return headers
 
     @staticmethod
     def validate_address(address: str) -> bool:
@@ -89,14 +97,27 @@ class TronGridClient:
 
 
 class EtherscanClient:
+    @property
+    def api_key(self) -> str:
+        return os.getenv("ETHERSCAN_API_KEY", "")
+
     @staticmethod
     def validate_address(address: str) -> bool:
         return isinstance(address, str) and len(address) == 42 and address.lower().startswith("0x")
 
     async def get_eth_transactions(self, address: str, limit: int = 20) -> List[OnChainTransaction]:
-        params = {"module": "account", "action": "txlist", "address": address,
-                  "startblock": 0, "endblock": 99999999, "page": 1, "offset": limit,
-                  "sort": "desc", "apikey": ETHERSCAN_API_KEY}
+        params = {
+            "chainid": "1",
+            "module": "account",
+            "action": "txlist",
+            "address": address,
+            "startblock": 0,
+            "endblock": 99999999,
+            "page": 1,
+            "offset": limit,
+            "sort": "desc",
+            "apikey": self.api_key
+        }
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.get(ETHERSCAN_BASE, params=params)
             resp.raise_for_status()
@@ -115,8 +136,16 @@ class EtherscanClient:
         return results
 
     async def get_erc20_transactions(self, address: str, contract_address: Optional[str] = None, limit: int = 20) -> List[OnChainTransaction]:
-        params = {"module": "account", "action": "tokentx", "address": address,
-                  "page": 1, "offset": limit, "sort": "desc", "apikey": ETHERSCAN_API_KEY}
+        params = {
+            "chainid": "1",
+            "module": "account",
+            "action": "tokentx",
+            "address": address,
+            "page": 1,
+            "offset": limit,
+            "sort": "desc",
+            "apikey": self.api_key
+        }
         if contract_address:
             params["contractaddress"] = contract_address
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
