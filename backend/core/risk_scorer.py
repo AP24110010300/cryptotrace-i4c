@@ -1,7 +1,8 @@
-﻿"""
+"""
 CryptoTrace-I4C AI Risk Scoring Engine — Member 4
 Rule-based heuristic scorer that evaluates a chain of on-chain transactions
-and returns a risk score (0-100) plus a detailed breakdown of risk factors.
+and returns an EXPLAINABLE risk score with per-factor WHY breakdown
+and structured investigative recommendations.
 
 Risk factors scored:
   - Velocity  : Too many hops in a short time window (rapid layering)
@@ -14,6 +15,11 @@ Risk factors scored:
 from typing import List, Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel
+from .models import (
+    ExplainableRiskFactor,
+    InvestigativeRecommendation,
+    ExplainableRiskReport,
+)
 
 
 class RiskFactor(BaseModel):
@@ -103,6 +109,7 @@ class RiskScorer:
         # ── Factor 3: Velocity / Rapid Layering ────────────────────────────
         rapid_count = 0
         timestamps = []
+        avg_hop_interval = 0
         for h in hops:
             ts = h.timestamp
             if isinstance(ts, str):
@@ -112,14 +119,19 @@ class RiskScorer:
                     ts = None
             timestamps.append(ts)
 
+        intervals = []
         for i in range(1, len(timestamps)):
             if timestamps[i] and timestamps[i - 1]:
                 try:
                     delta_s = abs((timestamps[i] - timestamps[i - 1]).total_seconds())
+                    intervals.append(delta_s)
                     if delta_s < RAPID_HOP_SECONDS:
                         rapid_count += 1
                 except Exception:
                     pass
+
+        if intervals:
+            avg_hop_interval = sum(intervals) / len(intervals)
 
         if rapid_count > 0:
             velocity_score = min(rapid_count * 10.0, 20.0)
@@ -209,6 +221,179 @@ class RiskScorer:
             recommended_action=action,
             confidence_pct=round(confidence, 1)
         )
+
+    def score_explainable(
+        self,
+        hops: list,
+        vasp_matched: bool = False,
+        vasp_name: Optional[str] = None,
+        token: str = "USDT-TRC20",
+        initial_amount: float = 0.0,
+    ) -> ExplainableRiskReport:
+        """
+        Generate an EXPLAINABLE risk report with:
+        - Per-factor WHY bullets
+        - Structured investigative recommendation
+        - Human-readable summary
+        """
+        basic_report = self.score(hops, vasp_matched, vasp_name, token)
+
+        # Build explainable factors
+        explainable_factors: List[ExplainableRiskFactor] = []
+        explainable_bullets: List[str] = []
+
+        n_hops = len(hops)
+        amounts = [h.amount for h in hops]
+
+        # Factor: Hop count
+        explainable_factors.append(ExplainableRiskFactor(
+            name="Transfer Chain Depth",
+            detected=n_hops >= 2,
+            score_contribution=min(n_hops * 8.0, 32.0),
+            description=f"{n_hops}-hop transfer chain detected",
+            severity="HIGH" if n_hops >= 3 else ("MEDIUM" if n_hops >= 2 else "LOW"),
+            icon="✓" if n_hops >= 2 else "✗"
+        ))
+        if n_hops >= 2:
+            explainable_bullets.append(f"✓ {n_hops}-hop transfer chain")
+
+        # Factor: Peel chain
+        peel_count = 0
+        for i in range(1, len(amounts)):
+            if amounts[i - 1] > 0 and (amounts[i] / amounts[i - 1]) >= PEEL_CHAIN_THRESHOLD:
+                peel_count += 1
+
+        explainable_factors.append(ExplainableRiskFactor(
+            name="Peel Chain Transactions",
+            detected=peel_count > 0,
+            score_contribution=min(peel_count * 12.0, 30.0),
+            description=f"{peel_count} peel-chain transactions (≥{int(PEEL_CHAIN_THRESHOLD*100)}% forwarded)",
+            severity="HIGH" if peel_count >= 2 else ("MEDIUM" if peel_count >= 1 else "LOW"),
+            icon="✓" if peel_count > 0 else "✗"
+        ))
+        if peel_count > 0:
+            explainable_bullets.append(f"✓ {peel_count} peel-chain transactions")
+
+        # Factor: Average hop interval
+        timestamps = []
+        for h in hops:
+            ts = h.timestamp
+            if isinstance(ts, str):
+                try:
+                    ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                except Exception:
+                    ts = None
+            timestamps.append(ts)
+
+        intervals = []
+        for i in range(1, len(timestamps)):
+            if timestamps[i] and timestamps[i - 1]:
+                try:
+                    delta_s = abs((timestamps[i] - timestamps[i - 1]).total_seconds())
+                    intervals.append(delta_s)
+                except Exception:
+                    pass
+
+        avg_interval = sum(intervals) / len(intervals) if intervals else 0
+        rapid_count = sum(1 for i in intervals if i < RAPID_HOP_SECONDS)
+
+        explainable_factors.append(ExplainableRiskFactor(
+            name="Hop Velocity",
+            detected=rapid_count > 0,
+            score_contribution=min(rapid_count * 10.0, 20.0),
+            description=f"Average hop interval: {avg_interval:.0f} sec" if avg_interval > 0 else "Velocity data unavailable",
+            severity="HIGH" if rapid_count > 0 else "LOW",
+            icon="✓" if rapid_count > 0 else "✗"
+        ))
+        if avg_interval > 0:
+            explainable_bullets.append(f"✓ Average hop interval: {avg_interval:.0f} sec")
+
+        # Factor: Mixer detection
+        mixer_detected = any(
+            any(kw in getattr(h, "notes", "").lower() for kw in MIXER_IDENTIFIERS)
+            for h in hops
+        ) or any(getattr(h, "is_mixer", False) for h in hops)
+
+        explainable_factors.append(ExplainableRiskFactor(
+            name="Mixer/Tumbler Interaction",
+            detected=mixer_detected,
+            score_contribution=15.0 if mixer_detected else 0.0,
+            description="Mixer interaction detected — transaction trail obfuscated" if mixer_detected else "No mixer interaction detected",
+            severity="CRITICAL" if mixer_detected else "LOW",
+            icon="✓" if mixer_detected else "✗"
+        ))
+        if mixer_detected:
+            explainable_bullets.append("✓ Mixer interaction detected")
+
+        # Factor: Funds reaching VASP
+        final_amount = amounts[-1] if amounts else 0
+        vasp_pct = (final_amount / amounts[0] * 100) if amounts and amounts[0] > 0 else 0
+
+        explainable_factors.append(ExplainableRiskFactor(
+            name="Funds Reached VASP",
+            detected=vasp_matched,
+            score_contribution=10.0 if vasp_matched else 0.0,
+            description=f"{vasp_pct:.0f}% funds reached VASP" if vasp_matched else "Destination VASP not identified",
+            severity="CRITICAL" if vasp_matched else "MEDIUM",
+            icon="✓" if vasp_matched else "✗"
+        ))
+        if vasp_matched:
+            explainable_bullets.append(f"✓ {vasp_pct:.0f}% funds reached VASP")
+            explainable_bullets.append(f"✓ Destination VASP identified: {vasp_name}")
+
+        # Factor: Rapid movement indicator
+        if rapid_count > 0:
+            explainable_bullets.append(f"✓ Rapid movement — {rapid_count} hops in <{RAPID_HOP_SECONDS//60} min")
+
+        # Build investigative recommendation
+        recommendation = self._build_recommendation(
+            basic_report.risk_level, vasp_matched, vasp_name, basic_report.overall_score
+        )
+
+        return ExplainableRiskReport(
+            overall_score=basic_report.overall_score,
+            risk_level=basic_report.risk_level,
+            laundering_typology=basic_report.laundering_typology,
+            factors=explainable_factors,
+            explainable_bullets=explainable_bullets,
+            summary=basic_report.summary,
+            recommendation=recommendation,
+            confidence_pct=basic_report.confidence_pct,
+        )
+
+    def _build_recommendation(
+        self, risk_level: str, vasp_matched: bool, vasp_name: Optional[str], score: float
+    ) -> InvestigativeRecommendation:
+        if risk_level == "CRITICAL":
+            return InvestigativeRecommendation(
+                priority="IMMEDIATE",
+                primary_action="Preserve / freeze destination funds and issue VASP information request.",
+                next_step=f"Send statutory notice (Sec 91/102 CrPC) to {vasp_name} LE portal." if vasp_name else "Escalate to I4C Cyber Fraud Wing.",
+                vasp_action=f"Freeze account at {vasp_name} — obtain KYC and linked bank details." if vasp_name else None,
+                legal_basis="Section 91 & 102 CrPC / Section 94 & 106 BNSS 2023"
+            )
+        elif risk_level == "HIGH":
+            return InvestigativeRecommendation(
+                priority="HIGH",
+                primary_action="Initiate formal VASP request and FIR. Monitor all linked addresses.",
+                next_step=f"Contact {vasp_name} nodal officer for account freeze." if vasp_name else "Continue tracing to identify destination VASP.",
+                vasp_action=f"Request KYC disclosure from {vasp_name}." if vasp_name else None,
+                legal_basis="Section 91 CrPC / Section 94 BNSS 2023"
+            )
+        elif risk_level == "MEDIUM":
+            return InvestigativeRecommendation(
+                priority="STANDARD",
+                primary_action="Continue tracing additional hops. Request wallet clustering analysis.",
+                next_step="Monitor flagged wallets for exchange deposits.",
+                legal_basis="Section 91 CrPC"
+            )
+        else:
+            return InvestigativeRecommendation(
+                priority="LOW",
+                primary_action="Continue investigation. Collect additional evidence before escalation.",
+                next_step="Request more transaction data from complainant.",
+                legal_basis=""
+            )
 
     def _classify_typology(self, hops, peel_count, mixer_detected, vasp_matched) -> str:
         if mixer_detected:

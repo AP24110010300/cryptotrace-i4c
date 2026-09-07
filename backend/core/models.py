@@ -22,9 +22,17 @@ class VASPInfo(BaseModel):
     name: str
     country: str
     is_fiu_registered: bool
+    fiu_registration_number: str = ""
+    supported_chains: List[str] = Field(default_factory=list)
+    jurisdiction: str = ""
+    compliance_contact: str = ""
+    le_contact: str = ""
+    compliance_portal: str
+    notice_method: str = ""
+    last_verified_date: str = ""
+    source_confidence: str = ""
     nodal_officer_email: str
     escalation_phone: str
-    compliance_portal: str
     known_deposit_patterns: List[str] = Field(default_factory=list)
 
 class TraceRequest(BaseModel):
@@ -35,6 +43,36 @@ class TraceRequest(BaseModel):
     ncrp_ref: Optional[str] = Field(None, description="1930 Helpline or NCRP complaint reference ID")
     fir_number: Optional[str] = Field("FIR-2026/CYBER/409", description="FIR number registered at police station")
     police_station: Optional[str] = Field("State Cyber Crime Police Station, CID", description="Investigating unit")
+    complainant_name: Optional[str] = Field(None, description="Name of the complainant/victim")
+    incident_date: Optional[str] = Field(None, description="Date of the incident (YYYY-MM-DD)")
+
+class ExplainableRiskFactor(BaseModel):
+    """A single explainable risk factor with WHY context."""
+    name: str
+    detected: bool = True
+    score_contribution: float
+    description: str
+    severity: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    icon: str = "✓"
+
+class InvestigativeRecommendation(BaseModel):
+    """Structured investigative recommendation for the IO."""
+    priority: str  # "IMMEDIATE", "HIGH", "STANDARD", "LOW"
+    primary_action: str
+    next_step: str
+    vasp_action: Optional[str] = None
+    legal_basis: str = ""
+
+class ExplainableRiskReport(BaseModel):
+    """Full explainable risk report with WHY factors and IO recommendation."""
+    overall_score: float
+    risk_level: str
+    laundering_typology: str
+    factors: List[ExplainableRiskFactor]
+    explainable_bullets: List[str]  # Human-readable "✓ 4-hop transfer chain" style
+    summary: str
+    recommendation: InvestigativeRecommendation
+    confidence_pct: float
 
 class TraceResult(BaseModel):
     case_id: str
@@ -50,6 +88,7 @@ class TraceResult(BaseModel):
     laundering_typology: str
     trace_duration_ms: float
     sha256_audit_hash: str
+    explainable_risk: Optional[ExplainableRiskReport] = None
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class CaseIntakeRequest(BaseModel):
@@ -97,3 +136,4 @@ class ReactFlowGraph(BaseModel):
     nodes: List[Dict[str, Any]]
     edges: List[Dict[str, Any]]
     meta: Dict[str, Any]
+

@@ -1,13 +1,14 @@
-﻿"""
+"""
 CryptoTrace-I4C Risk Score API Route — Member 4 / Member 6
 Exposes the M4 RiskScorer directly via REST for frontend and testing.
+Now includes explainable risk scoring with WHY factors.
 """
 from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from pydantic import BaseModel
 from ...core.risk_scorer import risk_scorer, RiskReport
+from ...core.models import TransactionHop, ExplainableRiskReport
 from ...core.pattern_detector import pattern_detector
-from ...core.models import TransactionHop
 from .trace import TRACE_CACHE
 
 router = APIRouter(prefix="/risk", tags=["AI Risk Scoring"])
@@ -48,6 +49,31 @@ async def score_risk(req: RiskAnalysisRequest):
         vasp_matched=vasp_matched,
         vasp_name=vasp_name,
         token=token
+    )
+
+
+@router.get("/{case_id}/explainable", response_model=ExplainableRiskReport,
+            summary="Get explainable risk report with WHY factors")
+async def get_explainable_risk(case_id: str):
+    """
+    Returns an explainable risk report with:
+    - Per-factor WHY bullets (e.g. "✓ 4-hop transfer chain")
+    - Structured investigative recommendation with priority and legal basis
+    - Human-readable summary
+    """
+    if case_id not in TRACE_CACHE:
+        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found. Run /api/trace first.")
+
+    trace = TRACE_CACHE[case_id]
+    vasp_matched = trace.destination_vasp is not None
+    vasp_name = trace.destination_vasp.name if trace.destination_vasp else None
+
+    return risk_scorer.score_explainable(
+        hops=trace.hops,
+        vasp_matched=vasp_matched,
+        vasp_name=vasp_name,
+        token=trace.token,
+        initial_amount=trace.total_stolen_amount,
     )
 
 

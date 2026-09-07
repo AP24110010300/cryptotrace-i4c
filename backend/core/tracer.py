@@ -1,4 +1,4 @@
-﻿"""
+"""
 CryptoTrace-I4C Heuristic Multi-Hop Tracing Engine — upgraded by Member 3/4/6
 Now wires in:
   - BlockchainClientRouter (M3) for live on-chain data
@@ -128,12 +128,19 @@ class HeuristicTracer:
 
         deposit_memo = "884920193"
 
-        # ── Step 4: M4 Risk Scoring ──────────────────────────────────────────
+        # ── Step 4: M4 Risk Scoring (Explainable) ───────────────────────────
         risk_report = risk_scorer.score(
             hops=hops,
             vasp_matched=(matched_vasp is not None),
             vasp_name=matched_vasp.name if matched_vasp else None,
             token=token,
+        )
+        explainable_report = risk_scorer.score_explainable(
+            hops=hops,
+            vasp_matched=(matched_vasp is not None),
+            vasp_name=matched_vasp.name if matched_vasp else None,
+            token=token,
+            initial_amount=initial_amount,
         )
 
         # ── Step 5: M4 Pattern Detection ────────────────────────────────────
@@ -163,6 +170,7 @@ class HeuristicTracer:
             laundering_typology=typology,
             trace_duration_ms=elapsed_ms,
             sha256_audit_hash=audit_hash,
+            explainable_risk=explainable_report,
         )
 
     # ── Helpers ──────────────────────────────────────────────────────────────
@@ -214,6 +222,7 @@ class HeuristicTracer:
         vasp_addr    = self._get_demo_vasp_address(token)
         matched_vasp = lookup_vasp_by_address(vasp_addr)
         risk_report  = risk_scorer.score(hops, vasp_matched=True, vasp_name=matched_vasp.name if matched_vasp else None, token=token)
+        explainable  = risk_scorer.score_explainable(hops, vasp_matched=True, vasp_name=matched_vasp.name if matched_vasp else None, token=token, initial_amount=amount)
         case_id      = f"CT-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
         audit_hash   = hashlib.sha256(f"{case_id}:{victim}:{suspect}:{amount}:{vasp_addr}".encode()).hexdigest()
         return TraceResult(
@@ -222,4 +231,5 @@ class HeuristicTracer:
             destination_vasp=matched_vasp, deposit_memo="884920193",
             risk_score=risk_report.overall_score, laundering_typology=risk_report.laundering_typology,
             trace_duration_ms=52.4, sha256_audit_hash=audit_hash,
+            explainable_risk=explainable,
         )

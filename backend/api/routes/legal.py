@@ -1,9 +1,11 @@
 """
 CryptoTrace-I4C Legal Notice Generator Routes
+Now includes Evidence Package generation (14-item comprehensive PDF).
 """
 from fastapi import APIRouter, HTTPException, Response
 from ...core.models import LegalNoticeRequest, LegalNoticeResponse
 from ...core.legal_generator import generate_section_91_notice, generate_section_91_pdf
+from ...core.evidence_packager import generate_evidence_package_pdf
 from .trace import TRACE_CACHE, tracer_engine, TraceRequest
 
 router = APIRouter(prefix="/legal", tags=["Legal Notices"])
@@ -62,6 +64,50 @@ async def download_notice_pdf(case_id: str, fir_number: str = "FIR-2026/CYBER/40
     )
 
     filename = f"Notice_Section91_{case_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+@router.get("/{case_id}/evidence-package", summary="Download comprehensive 14-item evidence package PDF")
+async def download_evidence_package(
+    case_id: str,
+    fir_number: str = "FIR-2026/CYBER/409",
+    complainant_name: str = "Complainant",
+    ncrp_ref: str = "",
+    incident_date: str = "",
+):
+    """
+    Generates and downloads the comprehensive 14-item evidence package PDF.
+    Includes: NCRP/FIR metadata, transaction trail, VASP attribution, FIU-IND info,
+    risk explanation, flow graph, legal notice, SHA-256 hash, manifest, and chain of custody.
+    """
+    trace = TRACE_CACHE.get(case_id)
+    if not trace:
+        demo_req = TraceRequest(
+            victim_wallet="TXqHx87KmN3vL8p2Qw5kR1m9xP4y8n2m7f",
+            suspect_wallet="TR8nh2K1m9xP4y8n2m7fB3dL1jV5xK8rT6",
+            initial_amount=45000.0,
+            token="USDT-TRC20",
+            ncrp_ref=ncrp_ref or case_id,
+            fir_number=fir_number
+        )
+        trace = tracer_engine.trace_transaction(demo_req)
+        trace.case_id = case_id
+        TRACE_CACHE[case_id] = trace
+
+    pdf_bytes = generate_evidence_package_pdf(
+        trace=trace,
+        fir_number=fir_number,
+        complainant_name=complainant_name,
+        ncrp_ref=ncrp_ref or case_id,
+        incident_date=incident_date,
+    )
+
+    filename = f"EvidencePackage_{case_id}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
