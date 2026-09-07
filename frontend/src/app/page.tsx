@@ -128,11 +128,12 @@ export default function ForensicCommandCenter() {
 
     try {
       const payload = {
-        source_address: activeCase.sourceWallet,
-        target_amount: parseFloat(activeCase.amount) || 45000,
-        currency: activeCase.token,
-        max_hops: 4,
-        confidence_threshold: 0.8,
+        victim_wallet: activeCase.sourceWallet,
+        suspect_wallet: activeCase.sourceWallet,
+        initial_amount: parseFloat(activeCase.amount) || 45000,
+        token: activeCase.token === "USDT" ? "USDT-TRC20" : activeCase.token,
+        ncrp_ref: activeCase.ncrpRef,
+        fir_number: "FIR-2026/CYBER/409",
       };
 
       const res = await fetch("http://localhost:8000/api/trace", {
@@ -142,16 +143,28 @@ export default function ForensicCommandCenter() {
       });
 
       const elapsed = Math.round(performance.now() - startTime);
-      setLatency(elapsed > 0 ? elapsed : 14);
 
       if (res.ok) {
         const data = await res.json();
-        if (data.sha256_hash) {
-          setActiveCase((prev) => ({
-            ...prev,
-            traceHash: data.sha256_hash,
-          }));
-        }
+        setLatency(data.trace_time_ms || (elapsed > 0 ? elapsed : 14));
+        setActiveCase((prev) => ({
+          ...prev,
+          caseId: data.case_id || prev.caseId,
+          traceHash: data.sha256_hash || prev.traceHash,
+          threatLevel: data.risk_score
+            ? `${data.risk_score.toFixed(1)}% ${data.risk_score >= 85 ? "CRITICAL" : data.risk_score >= 60 ? "HIGH" : "MEDIUM"}`
+            : prev.threatLevel,
+          destVasp: data.destination_vasp?.name || prev.destVasp,
+          fiuReg: data.destination_vasp?.fiu_ind_reg || prev.fiuReg,
+          nodalEmail: data.destination_vasp?.nodal_officer?.email || prev.nodalEmail,
+          nodalName: data.destination_vasp?.nodal_officer?.name || prev.nodalName,
+          nodalPhone: data.destination_vasp?.nodal_officer?.phone || prev.nodalPhone,
+          frozenAmount: data.total_volume_traced
+            ? data.total_volume_traced.toFixed(2)
+            : prev.frozenAmount,
+        }));
+      } else {
+        setLatency(elapsed > 0 ? elapsed : 14);
       }
     } catch {
       setLatency(Math.floor(Math.random() * 15) + 12);
