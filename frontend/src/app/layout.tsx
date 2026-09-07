@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "I4C CryptoTrace - Cyber Crime Command Center",
-  description: "Sub-second cross-chain multi-hop tracing and statutory asset freeze under Section 91/102 CrPC (MHA/I4C PS26183)",
+  title: "CryptoTrace-I4C — Law Enforcement Portal (Clean State)",
+  description: "India-first operational bridge between NCRP cybercrime cases, multi-chain blockchain tracing, FIU-IND VASP intelligence, explainable risk analysis, and automated statutory freezing workflows. MHA/I4C PS26183.",
 };
 
 export default function RootLayout({
@@ -12,20 +12,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="h-full bg-[#051424]" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#111318] text-[#e2e2e8] antialiased overflow-hidden font-sans">
+      <body className="h-full bg-[#051424] text-[#e2e8f0] antialiased overflow-hidden selection:bg-blue-600 selection:text-white font-sans" suppressHydrationWarning>
         {children}
       </body>
     </html>

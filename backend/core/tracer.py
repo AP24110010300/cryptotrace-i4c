@@ -112,7 +112,12 @@ class HeuristicTracer:
                 ))
         else:
             # Fallback: deterministic mock hops (always presentable in demo)
-            hops = self._build_mock_hops(victim_wallet, suspect_wallet, initial_amount, token, base_time)
+            hops = self._build_mock_hops(
+                victim_wallet, suspect_wallet, initial_amount, token, base_time,
+                max_hops=request.max_hops or 4,
+                noise_floor=request.noise_floor or 1000.0,
+                ofac_filter=request.ofac_filter if request.ofac_filter is not None else True
+            )
 
         # ── Step 3: VASP attribution ─────────────────────────────────────────
         vasp_deposit_addr = hops[-1].to_address
@@ -187,10 +192,11 @@ class HeuristicTracer:
         if "ERC" in t or "ETH" in t:   return "0x28c6c06298d514db089934071355e5743bf21d60"
         return "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s"
 
-    def _build_mock_hops(self, victim, suspect, amount, token, base_time) -> List[TransactionHop]:
-        """Deterministic mock hops — always produces a clean peel chain demo."""
+    def _build_mock_hops(self, victim, suspect, amount, token, base_time, max_hops=4, noise_floor=1000.0, ofac_filter=True) -> List[TransactionHop]:
+        """Deterministic hops — produces a clean peel chain respecting max_hops."""
         is_tron = "TRC" in token.upper() or "TRON" in token.upper()
         is_eth  = "ERC" in token.upper() or "ETH"  in token.upper()
+        gas_unit = "TRX" if is_tron else "Gwei" if is_eth else "sat/vB"
 
         def addr(seed):
             h = hashlib.sha256(seed.encode()).hexdigest()
@@ -198,27 +204,89 @@ class HeuristicTracer:
             if is_eth:  return f"0x{h[:40]}"
             return f"1{h[:33]}"
 
-        mule1 = addr(suspect + "m1")
-        mule2 = addr(suspect + "m2")
-        vasp  = self._get_demo_vasp_address(token)
-        a1, a2, a3 = amount, round(amount * 0.94, 2), round(amount * 0.94 * 0.97, 2)
-
         def tx(s): return f"0x{hashlib.sha256(s.encode()).hexdigest()[:64]}"
 
-        return [
-            TransactionHop(tx_hash=tx(victim+suspect),  from_address=victim,  to_address=suspect, amount=a1, token=token, timestamp=base_time.isoformat(),                               hop_number=1, is_peel_chain=False, is_mixer=False, notes=f"Initial Fraud Inflow"),
-            TransactionHop(tx_hash=tx(suspect+mule1),   from_address=suspect, to_address=mule1,   amount=a2, token=token, timestamp=(base_time+timedelta(minutes=8,  seconds=14)).isoformat(), hop_number=2, is_peel_chain=True,  is_mixer=False, notes="Peel Chain: 94% forwarded to Mule 1"),
-            TransactionHop(tx_hash=tx(mule1+mule2),     from_address=mule1,   to_address=mule2,   amount=a3, token=token, timestamp=(base_time+timedelta(minutes=15, seconds=32)).isoformat(), hop_number=3, is_peel_chain=True,  is_mixer=False, notes="Rapid Layering (7m 18s delta) — automated bot"),
-            TransactionHop(tx_hash=tx(mule2+vasp),      from_address=mule2,   to_address=vasp,    amount=a3, token=token, timestamp=(base_time+timedelta(minutes=23, seconds=50)).isoformat(), hop_number=4, is_peel_chain=False, is_mixer=False, notes="Direct Cash-Out Deposit to Exchange (Memo: 884920193)"),
-        ]
+        vasp = self._get_demo_vasp_address(token)
+        hops = []
+        base_block = 20984090
+
+        # Hop 1: victim -> suspect
+        hops.append(TransactionHop(
+            tx_hash=tx(victim + suspect),
+            from_address=victim,
+            to_address=suspect,
+            amount=amount,
+            token=token,
+            timestamp=base_time.isoformat(),
+            hop_number=1,
+            is_peel_chain=False,
+            is_mixer=False,
+            notes="Initial Fraud Inflow",
+            block_number=base_block,
+            gas_fee=f"14.2 {gas_unit}",
+        ))
+
+        # Intermediate hops
+        curr_from = suspect
+        curr_amt = amount
+        num_intermediate = max(1, min(6, (max_hops or 4) - 2))
+        peel_ratio = 0.94
+
+        for h in range(1, num_intermediate + 1):
+            hop_num = h + 1
+            mule = addr(f"{suspect}_mule_{h}")
+            curr_amt = round(curr_amt * peel_ratio, 2)
+            hop_time = base_time + timedelta(minutes=7 * h, seconds=14 * h)
+            is_mixer_hop = (h == 2 and ofac_filter)
+            note = f"Peel Chain Tier {h}: {int(peel_ratio * 100)}% forwarded" if not is_mixer_hop else "Sanctioned Mixer Hop detected"
+
+            hops.append(TransactionHop(
+                tx_hash=tx(f"{curr_from}_{mule}_{h}"),
+                from_address=curr_from,
+                to_address=mule,
+                amount=curr_amt,
+                token=token,
+                timestamp=hop_time.isoformat(),
+                hop_number=hop_num,
+                is_peel_chain=True,
+                is_mixer=is_mixer_hop,
+                notes=note,
+                block_number=base_block + h * 6,
+                gas_fee=f"{round(13.8 + h * 0.4, 1)} {gas_unit}",
+            ))
+            curr_from = mule
+
+        # Final Hop: last mule -> VASP
+        final_amt = round(curr_amt * 0.97, 2)
+        final_time = base_time + timedelta(minutes=7 * (num_intermediate + 1), seconds=50)
+        hops.append(TransactionHop(
+            tx_hash=tx(f"{curr_from}_{vasp}"),
+            from_address=curr_from,
+            to_address=vasp,
+            amount=final_amt,
+            token=token,
+            timestamp=final_time.isoformat(),
+            hop_number=len(hops) + 1,
+            is_peel_chain=False,
+            is_mixer=False,
+            notes="Direct Cash-Out Deposit to Exchange (Memo: 884920193)",
+            block_number=base_block + (num_intermediate + 1) * 6,
+            gas_fee=f"16.5 {gas_unit}",
+        ))
+
+        return hops
 
     def _deterministic_trace(self, request: TraceRequest) -> TraceResult:
         """Last-resort fully synchronous fallback."""
-        import asyncio as _asyncio
         victim, suspect, amount, token = (request.victim_wallet.strip(), request.suspect_wallet.strip(),
                                           request.initial_amount, request.token.strip())
         base_time = datetime.now(timezone.utc) - timedelta(hours=1)
-        hops = self._build_mock_hops(victim, suspect, amount, token, base_time)
+        hops = self._build_mock_hops(
+            victim, suspect, amount, token, base_time,
+            max_hops=request.max_hops or 4,
+            noise_floor=request.noise_floor or 1000.0,
+            ofac_filter=request.ofac_filter if request.ofac_filter is not None else True
+        )
         vasp_addr    = self._get_demo_vasp_address(token)
         matched_vasp = lookup_vasp_by_address(vasp_addr)
         risk_report  = risk_scorer.score(hops, vasp_matched=True, vasp_name=matched_vasp.name if matched_vasp else None, token=token)

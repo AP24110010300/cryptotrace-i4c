@@ -18,18 +18,7 @@ async def generate_notice(req: LegalNoticeRequest):
     """
     trace = TRACE_CACHE.get(req.case_id)
     if not trace:
-        demo_req = TraceRequest(
-            victim_wallet="TXqHx87KmN3vL8p2Qw5kR1m9xP4y8n2m7f",
-            suspect_wallet="TR8nh2K1m9xP4y8n2m7fB3dL1jV5xK8rT6",
-            initial_amount=45000.0,
-            token="USDT-TRC20",
-            ncrp_ref=req.case_id,
-            fir_number=req.fir_number or "FIR-2026/CYBER/409",
-            police_station=req.police_station or "State Cyber Crime Police Station, CID"
-        )
-        trace = tracer_engine.trace_transaction(demo_req)
-        trace.case_id = req.case_id
-        TRACE_CACHE[req.case_id] = trace
+        raise HTTPException(status_code=404, detail=f"Case ID '{req.case_id}' not found. Please execute a trace first.")
 
     notice = generate_section_91_notice(
         trace=trace,
@@ -46,17 +35,7 @@ async def download_notice_pdf(case_id: str, fir_number: str = "FIR-2026/CYBER/40
     """
     trace = TRACE_CACHE.get(case_id)
     if not trace:
-        demo_req = TraceRequest(
-            victim_wallet="TXqHx87KmN3vL8p2Qw5kR1m9xP4y8n2m7f",
-            suspect_wallet="TR8nh2K1m9xP4y8n2m7fB3dL1jV5xK8rT6",
-            initial_amount=45000.0,
-            token="USDT-TRC20",
-            ncrp_ref=case_id,
-            fir_number=fir_number
-        )
-        trace = tracer_engine.trace_transaction(demo_req)
-        trace.case_id = case_id
-        TRACE_CACHE[case_id] = trace
+        raise HTTPException(status_code=404, detail=f"Case ID '{case_id}' not found. Please execute a trace first.")
 
     pdf_bytes = generate_section_91_pdf(
         trace=trace,
@@ -87,17 +66,7 @@ async def download_evidence_package(
     """
     trace = TRACE_CACHE.get(case_id)
     if not trace:
-        demo_req = TraceRequest(
-            victim_wallet="TXqHx87KmN3vL8p2Qw5kR1m9xP4y8n2m7f",
-            suspect_wallet="TR8nh2K1m9xP4y8n2m7fB3dL1jV5xK8rT6",
-            initial_amount=45000.0,
-            token="USDT-TRC20",
-            ncrp_ref=ncrp_ref or case_id,
-            fir_number=fir_number
-        )
-        trace = tracer_engine.trace_transaction(demo_req)
-        trace.case_id = case_id
-        TRACE_CACHE[case_id] = trace
+        raise HTTPException(status_code=404, detail=f"Case ID '{case_id}' not found. Please execute a trace first.")
 
     pdf_bytes = generate_evidence_package_pdf(
         trace=trace,

@@ -2,98 +2,180 @@
 
 @layer base {
   :root {
-    --bg-primary: #111318;
-    --surface-container-low: #1a1c20;
-    --surface-container: #1e2024;
-    --surface-container-high: #282a2e;
-    --surface-container-highest: #333539;
-    --primary-cyan: #00f2fe;
-    --primary-dim: #00dce6;
-    --alert-crimson: #ff0055;
-    --alert-amber: #ffaa00;
-    --outline-border: #3a494b;
+    --ink: #051424;
+    --navy-950: #030c17;
+    --navy-900: #051424;
+    --navy-850: #091c33;
+    --navy-800: #0e2440;
+    --navy-700: #183459;
+    --navy-600: #234a7d;
+    --forensic-accent: #3b82f6;
+    --slate-100: #f1f5f9;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
   }
 
   body {
-    background-color: #111318;
-    color: #e2e2e8;
-    font-family: 'Inter', sans-serif;
+    background-color: #051424;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
-/* Custom HUD Borders from Stitch */
-.hud-border {
-  border: 1px solid #3a494b;
-  position: relative;
+/* ── Stitch Sovereign Navy Glass Styling ── */
+.glass-panel {
+  background: rgba(9, 28, 51, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.14);
+  border-radius: 12px;
 }
 
-.hud-border::before,
-.hud-border::after {
+.glass-panel-hover:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.glass-input {
+  background: rgba(5, 20, 36, 0.85);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.glass-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ── Grid Background ── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Vignette ── */
+.vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, #030c17 100%);
+}
+
+/* ── Shimmer text animation (Classic Gold & Amber) ── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.text-shimmer {
+  background: linear-gradient(90deg, #d97706, #fbbf24, #f59e0b, #d97706);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
+/* ── Pulse ring (Amber) ── */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(245,158,11,0); }
+  100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+/* ── Glow effects (Classic Gold & Amber) ── */
+.glow-gold {
+  text-shadow: 0 0 18px rgba(245,158,11,0.45), 0 0 36px rgba(217,119,6,0.25);
+}
+
+.glow-box-gold {
+  box-shadow: 0 0 25px rgba(245,158,11,0.14), 0 0 50px rgba(245,158,11,0.05);
+}
+
+.glow-box-rose {
+  box-shadow: 0 0 25px rgba(244,63,94,0.14), 0 0 50px rgba(244,63,94,0.04);
+}
+
+.glow-box-emerald {
+  box-shadow: 0 0 25px rgba(16,185,129,0.14), 0 0 50px rgba(16,185,129,0.04);
+}
+
+/* ── Sheen button effect ── */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+.sheen::after {
   content: '';
   position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1px solid #00dce6;
-  pointer-events: none;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+  transition: left 0.5s;
+}
+.sheen:hover::after {
+  left: 100%;
 }
 
-.hud-border::before {
-  top: -1px;
-  left: -1px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.hud-border::after {
-  bottom: -1px;
-  right: -1px;
-  border-left: none;
-  border-top: none;
-}
-
-/* Scanline and Focus */
-.scanline:focus {
-  outline: 1px solid #00dce6;
-  box-shadow: inset 0 0 10px rgba(0, 220, 230, 0.15);
-}
-
-/* Tactical Glows */
-.glow-accent {
-  box-shadow: 0 0 15px rgba(0, 220, 230, 0.25);
-}
-
-.glow-accent-sm {
-  box-shadow: 0 0 8px rgba(0, 220, 230, 0.35);
-}
-
-.glow-alert {
-  box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
-}
-
-.glow-amber {
-  box-shadow: 0 0 15px rgba(255, 170, 0, 0.25);
-}
-
-/* Custom Tactical Scrollbar */
+/* ── Tactical Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #0c0e12;
+  background: #000000;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #3a494b;
+  background: #1f1f1f;
   border-radius: 2px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #00dce6;
+  background: #333333;
 }
 
-/* Font classes */
+/* ── Mono code font ── */
 .font-mono-code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ── Node connector line (Classic Gold) ── */
+.connector-line {
+  height: 2px;
+  background: linear-gradient(90deg, rgba(245,158,11,0.5), rgba(245,158,11,0.1));
+  flex: 1;
+  min-width: 14px;
+}
+
+/* ── Scan line animation on trace (Gold pulse) ── */
+@keyframes scanline {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.scan-active .connector-line::after {
+  content: '';
+  display: block;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+  animation: scanline 1.4s ease-in-out infinite;
+}
+
+/* ── Fade in ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* ── Status dot ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.blink {
+  animation: blink 1.5s ease-in-out infinite;
 }

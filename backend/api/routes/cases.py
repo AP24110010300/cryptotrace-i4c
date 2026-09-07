@@ -11,18 +11,8 @@ from ...core.models import CaseIntakeRequest, CaseRecord
 
 router = APIRouter(prefix="/cases", tags=["Case Management"])
 
-# In-memory case storage seeded with sample demo data
-CASES_DB = {}
-
-DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "sample_cases.json")
-if os.path.exists(DATA_FILE):
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            cases_json = json.load(f)
-            for item in cases_json:
-                CASES_DB[item["case_id"]] = CaseRecord(**item)
-    except Exception as e:
-        print(f"Warning: Could not seed cases: {e}")
+# In-memory case storage for live registered cases
+CASES_DB: dict[str, CaseRecord] = {}
 
 @router.get("", response_model=List[CaseRecord], summary="List all active fraud cases")
 async def list_cases():

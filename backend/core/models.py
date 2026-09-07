@@ -16,6 +16,8 @@ class TransactionHop(BaseModel):
     is_peel_chain: bool = False
     is_mixer: bool = False
     notes: str = ""
+    block_number: Optional[int] = None
+    gas_fee: Optional[str] = None
 
 class VASPInfo(BaseModel):
     vasp_id: str
@@ -45,6 +47,9 @@ class TraceRequest(BaseModel):
     police_station: Optional[str] = Field("State Cyber Crime Police Station, CID", description="Investigating unit")
     complainant_name: Optional[str] = Field(None, description="Name of the complainant/victim")
     incident_date: Optional[str] = Field(None, description="Date of the incident (YYYY-MM-DD)")
+    max_hops: Optional[int] = Field(4, ge=1, le=8, description="Heuristic hop depth limit")
+    noise_floor: Optional[float] = Field(1000.0, description="Minimum amount threshold to suppress dust transfers")
+    ofac_filter: Optional[bool] = Field(True, description="Flag OFAC/sanctioned mixer nodes")
 
 class ExplainableRiskFactor(BaseModel):
     """A single explainable risk factor with WHY context."""
