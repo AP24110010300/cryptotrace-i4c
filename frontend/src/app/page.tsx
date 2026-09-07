@@ -506,34 +506,7 @@ export default function CleanModernSlateCommandCenter() {
               </button>
             </div>
 
-            {/* Quick Scenario Selector at Top of Panel */}
-            <div>
-              <label className="text-[10px] font-mono text-[#06b6d4] font-bold block mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">tune</span>
-                Scenario Case Switcher
-              </label>
-              <div className="grid grid-cols-3 gap-1 p-1 bg-[#0b0f19] border border-[#1f2937] rounded-lg">
-                {[
-                  { key: "phishing", label: "Phishing", icon: "shield" },
-                  { key: "ransomware", label: "Digi-Arrest", icon: "lock" },
-                  { key: "investment", label: "Mixer", icon: "cyclone" },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => handleSelectScenario(item.key)}
-                    className={`py-1.5 px-1 rounded text-[11px] font-mono flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                      activeScenarioKey === item.key
-                        ? "bg-[#06b6d4] text-[#0b0f19] font-bold shadow"
-                        : "text-[#9ca3af] hover:text-white hover:bg-[#1f2937]"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-xs">{item.icon}</span>
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Victim Wallet Input with Copy Button */}
             <div>
