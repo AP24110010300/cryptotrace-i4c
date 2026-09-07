@@ -253,6 +253,44 @@ export default function CleanModernSlateCommandCenter() {
     return () => clearInterval(interval);
   }, []);
 
+  // Dynamic Amount & Token synchronizer across nodes
+  const updateAmountAndNodes = (newAmountStr: string, tokenStr?: string) => {
+    const token = tokenStr !== undefined ? tokenStr : currentCase.token;
+    const cleanNum = parseFloat(newAmountStr.replace(/,/g, "")) || 0;
+
+    const updatedNodes = currentCase.nodes.map((node, index) => {
+      let factor = 1.0;
+      if (index === 0 || index === 1) factor = 1.0;
+      else if (index === 2) factor = 0.95;
+      else if (index === 3) factor = 0.931;
+
+      const nodeVal = cleanNum > 0 ? cleanNum * factor : 0;
+      const formattedVal =
+        nodeVal >= 1000
+          ? Math.round(nodeVal).toLocaleString()
+          : nodeVal > 0
+          ? nodeVal.toFixed(nodeVal < 10 ? 2 : 1)
+          : "0";
+
+      return {
+        ...node,
+        amount: `${formattedVal} ${token}`,
+      };
+    });
+
+    setCurrentCase((prev) => ({
+      ...prev,
+      amount: newAmountStr,
+      token: token,
+      nodes: updatedNodes,
+    }));
+
+    if (selectedNode) {
+      const match = updatedNodes.find((n) => n.id === selectedNode.id);
+      if (match) setSelectedNode(match);
+    }
+  };
+
   // Switch Scenario
   const handleSelectScenario = (key: string) => {
     setActiveScenarioKey(key);
@@ -448,6 +486,35 @@ export default function CleanModernSlateCommandCenter() {
               </button>
             </div>
 
+            {/* Quick Scenario Selector at Top of Panel */}
+            <div>
+              <label className="text-[10px] font-mono text-[#06b6d4] font-bold block mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">tune</span>
+                Scenario Case Switcher
+              </label>
+              <div className="grid grid-cols-3 gap-1 p-1 bg-[#0b0f19] border border-[#1f2937] rounded-lg">
+                {[
+                  { key: "phishing", label: "Phishing", icon: "shield" },
+                  { key: "ransomware", label: "Digi-Arrest", icon: "lock" },
+                  { key: "investment", label: "Mixer", icon: "cyclone" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => handleSelectScenario(item.key)}
+                    className={`py-1.5 px-1 rounded text-[11px] font-mono flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      activeScenarioKey === item.key
+                        ? "bg-[#06b6d4] text-[#0b0f19] font-bold shadow"
+                        : "text-[#9ca3af] hover:text-white hover:bg-[#1f2937]"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-xs">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Victim Wallet Input with Copy Button */}
             <div>
               <label className="text-[11px] font-mono text-[#9ca3af] block mb-1">
@@ -484,7 +551,7 @@ export default function CleanModernSlateCommandCenter() {
               <label className="text-[11px] font-mono text-[#9ca3af] block mb-1">Token</label>
               <select
                 value={currentCase.token}
-                onChange={(e) => setCurrentCase({ ...currentCase, token: e.target.value })}
+                onChange={(e) => updateAmountAndNodes(currentCase.amount, e.target.value)}
                 className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-3 py-2 rounded-lg font-mono focus:border-[#06b6d4] outline-none cursor-pointer"
               >
                 <option value="USDT">USDT (Tether USD)</option>
@@ -496,41 +563,70 @@ export default function CleanModernSlateCommandCenter() {
 
             {/* Stolen Amount */}
             <div>
-              <label className="text-[11px] font-mono text-[#9ca3af] block mb-1">
-                Stolen Amount
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-[11px] font-mono text-[#9ca3af]">
+                  Stolen Amount ({currentCase.token})
+                </label>
+                <span className="text-[10px] font-mono text-[#06b6d4]">Updates flowchart live</span>
+              </div>
               <input
                 type="text"
                 value={currentCase.amount}
-                onChange={(e) => setCurrentCase({ ...currentCase, amount: e.target.value })}
+                onChange={(e) => updateAmountAndNodes(e.target.value)}
+                placeholder="e.g. 50000"
                 className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-3 py-2 rounded-lg font-mono focus:border-[#06b6d4] outline-none font-bold"
               />
+              {/* Quick Amount Preset Buttons */}
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                <span className="text-[10px] font-mono text-[#6b7280]">Presets:</span>
+                {["10,000", "25,000", "50,000", "100,000"].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => updateAmountAndNodes(preset)}
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-all cursor-pointer ${
+                      currentCase.amount.replace(/,/g, "") === preset.replace(/,/g, "")
+                        ? "bg-[#06b6d4]/20 text-[#06b6d4] border-[#06b6d4]"
+                        : "bg-[#0b0f19] hover:bg-[#1f2937] text-[#9ca3af] hover:text-white border-[#374151]"
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Scenario Toggles */}
+            {/* Scenario Presets */}
             <div className="pt-2 border-t border-[#1f2937]">
-              <label className="text-[11px] font-mono text-[#9ca3af] block mb-2 font-bold uppercase tracking-wider">
-                Scenario Toggles
+              <label className="text-[11px] font-mono text-[#06b6d4] block mb-2 font-bold uppercase tracking-wider flex items-center justify-between">
+                <span>Scenario Presets</span>
+                <span className="text-[9px] text-[#9ca3af] font-normal">Click to switch</span>
               </label>
               <div className="space-y-2">
                 {[
-                  { key: "phishing", label: "Phishing / P2P Task", icon: "shield" },
-                  { key: "ransomware", label: "Digital Arrest", icon: "lock" },
-                  { key: "investment", label: "Mixer / Laundering", icon: "swap_calls" },
+                  { key: "phishing", label: "Phishing / P2P Task", icon: "shield", subtitle: "45,000 USDT • Tron/ETH" },
+                  { key: "ransomware", label: "Digital Arrest", icon: "lock", subtitle: "7.5 ETH • Extortion" },
+                  { key: "investment", label: "Mixer / Laundering", icon: "swap_calls", subtitle: "1.25 BTC • Tornado Pool" },
                 ].map((item) => (
                   <button
                     key={item.key}
+                    type="button"
                     onClick={() => handleSelectScenario(item.key)}
                     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
                       activeScenarioKey === item.key
-                        ? "bg-[#06b6d4]/10 border-[#06b6d4] text-white font-medium shadow-sm"
+                        ? "bg-[#06b6d4]/15 border-[#06b6d4] text-white font-medium shadow-md shadow-[#06b6d4]/10"
                         : "bg-[#0b0f19] border-[#1f2937] text-[#9ca3af] hover:text-white hover:border-[#374151]"
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">{item.icon}</span>
-                      {item.label}
-                    </span>
+                    <div className="flex items-center gap-2 text-left">
+                      <div className={`w-6 h-6 rounded flex items-center justify-center ${activeScenarioKey === item.key ? "bg-[#06b6d4] text-[#0b0f19]" : "bg-[#1f2937] text-[#9ca3af]"}`}>
+                        <span className="material-symbols-outlined text-xs">{item.icon}</span>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-white">{item.label}</div>
+                        <div className="text-[9px] font-mono text-[#6b7280]">{item.subtitle}</div>
+                      </div>
+                    </div>
                     <span
                       className={`w-8 h-4 rounded-full p-0.5 transition-colors flex items-center ${
                         activeScenarioKey === item.key
