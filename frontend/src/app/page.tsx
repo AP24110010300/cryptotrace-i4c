@@ -419,49 +419,49 @@ export default function CleanModernSlateCommandCenter() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-[#e2e2e8] flex flex-col font-sans select-none antialiased">
       {/* ── TOP NAVIGATION BAR ── */}
-      <header className="h-16 bg-[#0e1322] border-b border-[#1f2937] px-6 flex items-center justify-between z-50">
+      <header className="h-14 bg-[#0e1322] border-b border-[#1f2937] px-4 md:px-6 flex items-center justify-between z-50 flex-wrap md:flex-nowrap gap-2">
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#111827] border border-[#06b6d4]/40 flex items-center justify-center shadow-md">
-            <span className="material-symbols-outlined text-[#06b6d4] text-xl">shield</span>
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#111827] border border-[#06b6d4]/40 flex items-center justify-center shadow-md">
+            <span className="material-symbols-outlined text-[#06b6d4] text-lg">shield</span>
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-wide text-white flex items-center gap-2 font-mono">
+            <h1 className="text-sm md:text-base font-bold tracking-wide text-white flex items-center gap-2 font-mono whitespace-nowrap">
               CryptoTrace-I4C
               <span className="text-[10px] bg-[#06b6d4]/10 text-[#06b6d4] border border-[#06b6d4]/30 px-1.5 py-0.5 rounded font-normal">
                 PS26183
               </span>
             </h1>
-            <p className="text-[10px] text-[#9ca3af] tracking-wider uppercase font-mono">
+            <p className="text-[9px] text-[#9ca3af] tracking-wider uppercase font-mono whitespace-nowrap">
               MHA &bull; Cyber Crime Forensic Engine
             </p>
           </div>
         </div>
 
         {/* Global Search Bar */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-md mx-8 relative">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#6b7280] text-lg">
+        <form onSubmit={handleSearch} className="flex-1 max-w-sm mx-2 md:mx-4 relative min-w-[180px]">
+          <span className="material-symbols-outlined absolute left-2.5 top-2 text-[#6b7280] text-base">
             search
           </span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search wallet address (0x... / T...) or tx hash..."
-            className="w-full bg-[#111827] border border-[#1f2937] text-xs text-white pl-10 pr-20 py-2 rounded-lg focus:border-[#06b6d4] outline-none font-mono placeholder:text-[#6b7280] transition-colors"
+            placeholder="Search address (0x... / T...) or tx..."
+            className="w-full bg-[#111827] border border-[#1f2937] text-xs text-white pl-8 pr-16 py-1.5 rounded-lg focus:border-[#06b6d4] outline-none font-mono placeholder:text-[#6b7280] transition-colors"
           />
           <button
             type="submit"
-            className="absolute right-1.5 top-1.5 bg-[#1f2937] hover:bg-[#374151] text-[#9ca3af] hover:text-white text-[11px] px-2.5 py-1 rounded font-mono transition-colors cursor-pointer"
+            className="absolute right-1 top-1 bg-[#1f2937] hover:bg-[#374151] text-[#9ca3af] hover:text-white text-[10px] px-2 py-0.5 rounded font-mono transition-colors cursor-pointer"
           >
             Lookup
           </button>
         </form>
 
         {/* Status & Quick Links */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
           <div
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono whitespace-nowrap ${
               backendStatus
                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                 : "bg-rose-500/10 text-rose-400 border-rose-500/30"
@@ -472,14 +472,14 @@ export default function CleanModernSlateCommandCenter() {
                 backendStatus ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
               }`}
             ></div>
-            <span className="font-semibold text-[11px]">
+            <span className="font-semibold text-[10.5px]">
               {backendStatus ? "Live Backend Connected" : "Backend Offline"}
             </span>
           </div>
 
           <button
             onClick={handleExportJson}
-            className="text-xs font-mono text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-3 py-1.5 rounded-lg hover:bg-[#06b6d4]/20 transition-all cursor-pointer"
+            className="text-[11px] font-mono text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/30 px-2.5 py-1 rounded-lg hover:bg-[#06b6d4]/20 transition-all cursor-pointer whitespace-nowrap"
           >
             Export Dossier
           </button>
@@ -487,30 +487,28 @@ export default function CleanModernSlateCommandCenter() {
       </header>
 
       {/* ── MAIN 3-COLUMN WORKSPACE ── */}
-      <div className="flex-1 p-5 grid grid-cols-12 gap-5 overflow-hidden">
+      <main className="flex-1 p-3 lg:p-4 grid grid-cols-12 gap-3.5 lg:gap-4 overflow-y-auto">
         {/* ── COLUMN 1: CASE DOSSIER (Width: 3/12) ── */}
-        <section className="col-span-12 lg:col-span-3 bg-[#111827] border border-[#1f2937] rounded-xl p-5 flex flex-col justify-between shadow-lg">
-          <div className="space-y-4">
+        <section className="col-span-12 lg:col-span-3 bg-[#111827] border border-[#1f2937] rounded-xl p-3 flex flex-col justify-between shadow-lg">
+          <div className="space-y-2">
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-[#1f2937] pb-3">
+            <div className="flex justify-between items-center border-b border-[#1f2937] pb-1.5">
               <div>
-                <h2 className="text-sm font-bold text-white tracking-wide">Case Dossier</h2>
-                <p className="text-[10px] font-mono text-[#9ca3af]">{currentCase.id}</p>
+                <h2 className="text-xs font-bold text-white tracking-wide">Case Dossier</h2>
+                <p className="text-[9.5px] font-mono text-[#9ca3af]">{currentCase.id}</p>
               </div>
               <button
                 onClick={() => handleSelectScenario("phishing")}
                 className="text-xs text-[#9ca3af] hover:text-white p-1 cursor-pointer"
                 title="Reset to default case"
               >
-                <span className="material-symbols-outlined text-base">refresh</span>
+                <span className="material-symbols-outlined text-sm">refresh</span>
               </button>
             </div>
 
-
-
             {/* Victim Wallet Input with Copy Button */}
             <div>
-              <label className="text-[11px] font-mono text-[#9ca3af] block mb-1">
+              <label className="text-[10px] font-mono text-[#9ca3af] block mb-0.5">
                 Victim Wallet
               </label>
               <div className="relative">
@@ -520,86 +518,80 @@ export default function CleanModernSlateCommandCenter() {
                   onChange={(e) =>
                     setCurrentCase({ ...currentCase, victimWallet: e.target.value })
                   }
-                  className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-3 py-2 pr-9 rounded-lg font-mono focus:border-[#06b6d4] outline-none"
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-2.5 py-1 pr-8 rounded-lg font-mono focus:border-[#06b6d4] outline-none"
                 />
                 <button
                   onClick={handleCopyWallet}
-                  className="absolute right-2 top-2 text-[#9ca3af] hover:text-[#06b6d4] cursor-pointer"
+                  className="absolute right-2 top-1 text-[#9ca3af] hover:text-[#06b6d4] cursor-pointer"
                   title="Copy address"
                 >
-                  <span className="material-symbols-outlined text-base">
+                  <span className="material-symbols-outlined text-xs">
                     {copied ? "check" : "content_copy"}
                   </span>
                 </button>
               </div>
               {copied && (
-                <span className="text-[10px] font-mono text-emerald-400 mt-1 block">
+                <span className="text-[9px] font-mono text-emerald-400 mt-0.5 block">
                   Copied to clipboard!
                 </span>
               )}
             </div>
 
-            {/* Token Selector */}
-            <div>
-              <label className="text-[11px] font-mono text-[#9ca3af] block mb-1">Token</label>
-              <select
-                value={currentCase.token}
-                onChange={(e) => updateAmountAndNodes(currentCase.amount, e.target.value)}
-                className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-3 py-2 rounded-lg font-mono focus:border-[#06b6d4] outline-none cursor-pointer"
-              >
-                <option value="USDT">USDT (Tether USD)</option>
-                <option value="ETH">ETH (Ethereum)</option>
-                <option value="BTC">BTC (Bitcoin)</option>
-                <option value="USDC">USDC (USD Coin)</option>
-              </select>
+            {/* Token & Stolen Amount in a 2-column row to save vertical space */}
+            <div className="grid grid-cols-5 gap-2">
+              <div className="col-span-2">
+                <label className="text-[10px] font-mono text-[#9ca3af] block mb-0.5">Token</label>
+                <select
+                  value={currentCase.token}
+                  onChange={(e) => updateAmountAndNodes(currentCase.amount, e.target.value)}
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-2 py-1 rounded-lg font-mono focus:border-[#06b6d4] outline-none cursor-pointer"
+                >
+                  <option value="USDT">USDT</option>
+                  <option value="ETH">ETH</option>
+                  <option value="BTC">BTC</option>
+                  <option value="USDC">USDC</option>
+                </select>
+              </div>
+              <div className="col-span-3">
+                <label className="text-[10px] font-mono text-[#9ca3af] block mb-0.5">
+                  Amount ({currentCase.token})
+                </label>
+                <input
+                  type="text"
+                  value={currentCase.amount}
+                  onChange={(e) => updateAmountAndNodes(e.target.value)}
+                  placeholder="e.g. 50000"
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-2 py-1 rounded-lg font-mono focus:border-[#06b6d4] outline-none font-bold"
+                />
+              </div>
             </div>
 
-            {/* Stolen Amount */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-[11px] font-mono text-[#9ca3af]">
-                  Stolen Amount ({currentCase.token})
-                </label>
-                <span className="text-[10px] font-mono text-[#06b6d4]">Updates flowchart live</span>
-              </div>
-              <input
-                type="text"
-                value={currentCase.amount}
-                onChange={(e) => updateAmountAndNodes(e.target.value)}
-                placeholder="e.g. 50000"
-                className="w-full bg-[#0b0f19] border border-[#1f2937] text-xs text-white px-3 py-2 rounded-lg font-mono focus:border-[#06b6d4] outline-none font-bold"
-              />
-              {/* Quick Amount Preset Buttons */}
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <span className="text-[10px] font-mono text-[#6b7280]">Presets:</span>
-                {(SCENARIO_PRESETS[activeScenarioKey] || SCENARIO_PRESETS.phishing).map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => updateAmountAndNodes(preset)}
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-all cursor-pointer ${
-                      currentCase.amount.replace(/,/g, "") === preset.replace(/,/g, "")
-                        ? "bg-[#06b6d4]/20 text-[#06b6d4] border-[#06b6d4]"
-                        : "bg-[#0b0f19] hover:bg-[#1f2937] text-[#9ca3af] hover:text-white border-[#374151]"
-                    }`}
-                  >
-                    {preset} {currentCase.token}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[9px] font-mono text-[#6b7280] mt-1.5 flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs text-[#06b6d4]">info</span>
-                Type any custom value in the box &mdash; flowchart recalculates live!
-              </p>
+            {/* Presets row */}
+            <div className="flex items-center gap-1 flex-wrap">
+              <span className="text-[9px] font-mono text-[#6b7280]">Presets:</span>
+              {(SCENARIO_PRESETS[activeScenarioKey] || SCENARIO_PRESETS.phishing).map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => updateAmountAndNodes(preset)}
+                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded border transition-all cursor-pointer ${
+                    currentCase.amount.replace(/,/g, "") === preset.replace(/,/g, "")
+                      ? "bg-[#06b6d4]/20 text-[#06b6d4] border-[#06b6d4]"
+                      : "bg-[#0b0f19] hover:bg-[#1f2937] text-[#9ca3af] hover:text-white border-[#374151]"
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
             </div>
 
             {/* Scenario Presets */}
-            <div className="pt-2 border-t border-[#1f2937]">
-              <label className="text-[11px] font-mono text-[#06b6d4] block mb-2 font-bold uppercase tracking-wider flex items-center justify-between">
+            <div className="pt-1.5 border-t border-[#1f2937]">
+              <label className="text-[10px] font-mono text-[#06b6d4] block mb-1 font-bold uppercase tracking-wider flex items-center justify-between">
                 <span>Scenario Presets</span>
-                <span className="text-[9px] text-[#9ca3af] font-normal">Click to switch</span>
+                <span className="text-[8.5px] text-[#9ca3af] font-normal">Click to switch</span>
               </label>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {[
                   { key: "phishing", label: "Phishing / P2P Task", icon: "shield", subtitle: "45,000 USDT • Tron/ETH" },
                   { key: "ransomware", label: "Digital Arrest", icon: "lock", subtitle: "7.5 ETH • Extortion" },
@@ -609,29 +601,29 @@ export default function CleanModernSlateCommandCenter() {
                     key={item.key}
                     type="button"
                     onClick={() => handleSelectScenario(item.key)}
-                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                    className={`w-full flex justify-between items-center px-2 py-1.5 rounded-lg border text-xs transition-all cursor-pointer ${
                       activeScenarioKey === item.key
-                        ? "bg-[#06b6d4]/15 border-[#06b6d4] text-white font-medium shadow-md shadow-[#06b6d4]/10"
+                        ? "bg-[#06b6d4]/15 border-[#06b6d4] text-white font-medium shadow-sm"
                         : "bg-[#0b0f19] border-[#1f2937] text-[#9ca3af] hover:text-white hover:border-[#374151]"
                     }`}
                   >
                     <div className="flex items-center gap-2 text-left">
-                      <div className={`w-6 h-6 rounded flex items-center justify-center ${activeScenarioKey === item.key ? "bg-[#06b6d4] text-[#0b0f19]" : "bg-[#1f2937] text-[#9ca3af]"}`}>
+                      <div className={`w-5 h-5 rounded flex items-center justify-center ${activeScenarioKey === item.key ? "bg-[#06b6d4] text-[#0b0f19]" : "bg-[#1f2937] text-[#9ca3af]"}`}>
                         <span className="material-symbols-outlined text-xs">{item.icon}</span>
                       </div>
                       <div>
-                        <div className="font-semibold text-white">{item.label}</div>
-                        <div className="text-[9px] font-mono text-[#6b7280]">{item.subtitle}</div>
+                        <div className="font-semibold text-white text-[11px] leading-tight">{item.label}</div>
+                        <div className="text-[8px] font-mono text-[#6b7280]">{item.subtitle}</div>
                       </div>
                     </div>
                     <span
-                      className={`w-8 h-4 rounded-full p-0.5 transition-colors flex items-center ${
+                      className={`w-6 h-3 rounded-full p-0.5 transition-colors flex items-center ${
                         activeScenarioKey === item.key
                           ? "bg-[#06b6d4] justify-end"
                           : "bg-[#1f2937] justify-start"
                       }`}
                     >
-                      <span className="w-3 h-3 rounded-full bg-white block shadow"></span>
+                      <span className="w-2 h-2 rounded-full bg-white block shadow"></span>
                     </span>
                   </button>
                 ))}
@@ -640,7 +632,7 @@ export default function CleanModernSlateCommandCenter() {
           </div>
 
           {/* Quick Legal Dossier Footnote */}
-          <div className="mt-4 pt-3 border-t border-[#1f2937] text-[10px] font-mono text-[#6b7280] space-y-1">
+          <div className="mt-2 pt-1.5 border-t border-[#1f2937] text-[9px] font-mono text-[#6b7280] space-y-0.5">
             <div className="flex justify-between">
               <span>NCRP Ref:</span>
               <span className="text-[#9ca3af]">{currentCase.ncrpRef}</span>
@@ -653,9 +645,9 @@ export default function CleanModernSlateCommandCenter() {
         </section>
 
         {/* ── COLUMN 2: CENTER FLOWCHART CANVAS (Width: 6/12) ── */}
-        <section className="col-span-12 lg:col-span-6 bg-[#111827] border border-[#1f2937] rounded-xl p-5 flex flex-col justify-between shadow-lg relative">
+        <section className="col-span-12 lg:col-span-6 bg-[#111827] border border-[#1f2937] rounded-xl p-3.5 flex flex-col justify-between shadow-lg relative">
           {/* Canvas Header */}
-          <div className="flex justify-between items-center border-b border-[#1f2937] pb-3 mb-4">
+          <div className="flex justify-between items-center border-b border-[#1f2937] pb-2 mb-2">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-white tracking-wide">Money Trail Flowchart</h2>
               <span className="text-[10px] font-mono bg-[#1f2937] text-[#9ca3af] px-2 py-0.5 rounded">
@@ -666,7 +658,7 @@ export default function CleanModernSlateCommandCenter() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setViewMode(viewMode === "flowchart" ? "list" : "flowchart")}
-                className="text-xs font-mono bg-[#1f2937] hover:bg-[#374151] text-[#9ca3af] hover:text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                className="text-xs font-mono bg-[#1f2937] hover:bg-[#374151] text-[#9ca3af] hover:text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
               >
                 {viewMode === "flowchart" ? "List View" : "Flowchart"}
               </button>
@@ -674,9 +666,9 @@ export default function CleanModernSlateCommandCenter() {
           </div>
 
           {/* Canvas Content */}
-          <div className="flex-1 flex flex-col justify-center items-center relative py-6">
+          <div className="flex-1 flex flex-col justify-center items-center relative py-2">
             {viewMode === "flowchart" ? (
-              <div className="w-full flex items-center justify-between gap-3 px-2 overflow-x-auto">
+              <div className="w-full flex items-center justify-between gap-2 px-1 overflow-x-auto">
                 {currentCase.nodes.map((node, index) => {
                   const isSelected = selectedNode?.id === node.id;
                   return (
@@ -684,16 +676,16 @@ export default function CleanModernSlateCommandCenter() {
                       {/* Node Card */}
                       <div
                         onClick={() => setSelectedNode(node)}
-                        className={`flex-1 min-w-[125px] p-3 rounded-xl border transition-all cursor-pointer relative group ${
+                        className={`flex-1 min-w-[110px] p-2.5 rounded-xl border transition-all cursor-pointer relative group ${
                           isSelected
                             ? "bg-[#0e1726] border-[#06b6d4] shadow-lg shadow-[#06b6d4]/15 scale-105"
                             : "bg-[#0b0f19] border-[#1f2937] hover:border-[#374151]"
                         }`}
                       >
                         {/* Top: Icon + Label */}
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-6 h-6 rounded bg-[#1f2937] flex items-center justify-center text-[#06b6d4]">
-                            <span className="material-symbols-outlined text-sm">{node.icon}</span>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <div className="w-5 h-5 rounded bg-[#1f2937] flex items-center justify-center text-[#06b6d4]">
+                            <span className="material-symbols-outlined text-xs">{node.icon}</span>
                           </div>
                           <span className="text-xs font-bold text-white truncate">
                             {node.label}
@@ -701,25 +693,25 @@ export default function CleanModernSlateCommandCenter() {
                         </div>
 
                         {/* Middle: Amount & Address */}
-                        <div className="font-mono text-[11px] text-[#06b6d4] font-semibold mb-1 truncate">
+                        <div className="font-mono text-[10.5px] text-[#06b6d4] font-semibold mb-0.5 truncate">
                           {node.amount}
                         </div>
-                        <div className="font-mono text-[9px] text-[#6b7280] truncate">
+                        <div className="font-mono text-[8.5px] text-[#6b7280] truncate">
                           {node.address.substring(0, 6)}...
                           {node.address.substring(node.address.length - 4)}
                         </div>
 
                         {/* Bottom: Risk Badge */}
-                        <div className="mt-2.5">
+                        <div className="mt-2">
                           <span
-                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded border inline-block ${node.riskBadgeColor}`}
+                            className={`text-[8.5px] font-mono px-1.5 py-0.5 rounded border inline-block ${node.riskBadgeColor}`}
                           >
                             {node.riskBadge}
                           </span>
                         </div>
 
                         {node.velocity && (
-                          <div className="mt-1 text-[9px] font-mono text-[#9ca3af]">
+                          <div className="mt-0.5 text-[8.5px] font-mono text-[#9ca3af]">
                             &bull; {node.velocity}
                           </div>
                         )}
@@ -728,7 +720,7 @@ export default function CleanModernSlateCommandCenter() {
                       {/* Directional Connecting Arrow between nodes */}
                       {index < currentCase.nodes.length - 1 && (
                         <div className="flex items-center text-[#4b5563] flex-shrink-0">
-                          <span className="material-symbols-outlined text-lg animate-pulse">
+                          <span className="material-symbols-outlined text-base animate-pulse">
                             arrow_forward
                           </span>
                         </div>
@@ -739,25 +731,25 @@ export default function CleanModernSlateCommandCenter() {
               </div>
             ) : (
               /* List / Table View */
-              <div className="w-full space-y-2 font-mono text-xs overflow-y-auto max-h-72">
+              <div className="w-full space-y-1.5 font-mono text-xs overflow-y-auto max-h-72">
                 {currentCase.nodes.map((node) => (
                   <div
                     key={node.id}
                     onClick={() => setSelectedNode(node)}
-                    className="p-2.5 bg-[#0b0f19] border border-[#1f2937] rounded-lg flex justify-between items-center hover:border-[#06b6d4] cursor-pointer"
+                    className="p-2 bg-[#0b0f19] border border-[#1f2937] rounded-lg flex justify-between items-center hover:border-[#06b6d4] cursor-pointer"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-sm text-[#06b6d4]">
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-xs text-[#06b6d4]">
                         {node.icon}
                       </span>
                       <div>
-                        <div className="font-bold text-white">{node.label}</div>
-                        <div className="text-[10px] text-[#6b7280]">{node.address}</div>
+                        <div className="font-bold text-white text-xs">{node.label}</div>
+                        <div className="text-[9.5px] text-[#6b7280]">{node.address}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[#06b6d4] font-bold">{node.amount}</div>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded border ${node.riskBadgeColor}`}>
+                      <div className="text-[#06b6d4] font-bold text-xs">{node.amount}</div>
+                      <span className={`text-[8.5px] px-1.5 py-0.5 rounded border ${node.riskBadgeColor}`}>
                         {node.riskBadge}
                       </span>
                     </div>
@@ -768,24 +760,24 @@ export default function CleanModernSlateCommandCenter() {
 
             {/* Selected Node Inspector Drawer */}
             {selectedNode && (
-              <div className="w-full mt-6 p-3 bg-[#0b0f19] border border-[#1f2937] rounded-lg font-mono text-xs flex justify-between items-center">
+              <div className="w-full mt-3 p-2.5 bg-[#0b0f19] border border-[#1f2937] rounded-lg font-mono text-xs flex justify-between items-center">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[#06b6d4] font-bold">{selectedNode.label}</span>
-                    <span className="text-[#6b7280]">&bull; {selectedNode.role}</span>
+                    <span className="text-[#06b6d4] font-bold text-xs">{selectedNode.label}</span>
+                    <span className="text-[#6b7280] text-[11px]">&bull; {selectedNode.role}</span>
                   </div>
-                  <div className="text-[11px] text-[#9ca3af] break-all">
+                  <div className="text-[10.5px] text-[#9ca3af] break-all">
                     Address: <span className="text-white">{selectedNode.address}</span>
                   </div>
                   {selectedNode.txHash && (
-                    <div className="text-[10px] text-[#6b7280]">
+                    <div className="text-[9.5px] text-[#6b7280]">
                       Tx Hash: {selectedNode.txHash}
                     </div>
                   )}
                 </div>
-                <div className="text-right flex-shrink-0 ml-4">
+                <div className="text-right flex-shrink-0 ml-3">
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded border ${selectedNode.riskBadgeColor}`}
+                    className={`text-[9.5px] px-2 py-0.5 rounded border ${selectedNode.riskBadgeColor}`}
                   >
                     {selectedNode.riskBadge}
                   </span>
@@ -795,11 +787,11 @@ export default function CleanModernSlateCommandCenter() {
           </div>
 
           {/* Primary Action Button */}
-          <div className="pt-4 border-t border-[#1f2937] flex justify-center">
+          <div className="pt-2.5 border-t border-[#1f2937] flex justify-center">
             <button
               onClick={handleExecuteTrace}
               disabled={isTracing}
-              className="w-full py-3 bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b0f19] font-mono font-bold text-xs rounded-lg transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b0f19] font-mono font-bold text-xs rounded-lg transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
             >
               <span
                 className={`material-symbols-outlined text-base ${
@@ -814,12 +806,12 @@ export default function CleanModernSlateCommandCenter() {
         </section>
 
         {/* ── COLUMN 3: VASP ATTRIBUTION & STATUTORY FREEZE (Width: 3/12) ── */}
-        <section className="col-span-12 lg:col-span-3 bg-[#111827] border border-[#1f2937] rounded-xl p-5 flex flex-col justify-between shadow-lg">
-          <div className="space-y-4">
+        <section className="col-span-12 lg:col-span-3 bg-[#111827] border border-[#1f2937] rounded-xl p-3.5 flex flex-col justify-between shadow-lg">
+          <div className="space-y-2.5">
             {/* Header Accordion */}
             <div
               onClick={() => setVaspAccordionOpen(!vaspAccordionOpen)}
-              className="flex justify-between items-center border-b border-[#1f2937] pb-3 cursor-pointer"
+              className="flex justify-between items-center border-b border-[#1f2937] pb-2 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm text-[#06b6d4]">domain</span>
@@ -832,35 +824,35 @@ export default function CleanModernSlateCommandCenter() {
 
             {/* Accordion Body */}
             {vaspAccordionOpen && (
-              <div className="space-y-3.5">
+              <div className="space-y-2.5">
                 {/* Exchange Card */}
-                <div className="p-3 bg-[#0b0f19] border border-[#1f2937] rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="material-symbols-outlined text-amber-400 text-lg">
+                <div className="p-2.5 bg-[#0b0f19] border border-[#1f2937] rounded-lg">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="material-symbols-outlined text-amber-400 text-base">
                       monetization_on
                     </span>
                     <span className="font-bold text-white text-xs">{currentCase.destVasp}</span>
                   </div>
-                  <p className="text-[10px] font-mono text-emerald-400">FIU-IND Registered Exchange</p>
+                  <p className="text-[9.5px] font-mono text-emerald-400">FIU-IND Registered Exchange</p>
                 </div>
 
                 {/* FIU-IND Details */}
-                <div className="text-xs space-y-1 font-mono">
-                  <div className="text-[#9ca3af] text-[11px]">FIU-IND Registration Number</div>
-                  <div className="text-white font-bold bg-[#0b0f19] p-2 rounded border border-[#1f2937]">
+                <div className="text-xs space-y-0.5 font-mono">
+                  <div className="text-[#9ca3af] text-[10.5px]">FIU-IND Registration Number</div>
+                  <div className="text-white font-bold bg-[#0b0f19] p-1.5 rounded border border-[#1f2937] text-xs">
                     {currentCase.fiuReg}
                   </div>
                 </div>
 
                 {/* Nodal Officer Contact Details */}
-                <div className="text-xs space-y-2 font-mono">
-                  <div className="text-[#9ca3af] text-[11px]">Nodal Officer Contact Details</div>
-                  <div className="bg-[#0b0f19] p-3 rounded-lg border border-[#1f2937] space-y-2 text-[11px]">
-                    <div className="flex items-center gap-2 text-white">
+                <div className="text-xs space-y-1 font-mono">
+                  <div className="text-[#9ca3af] text-[10.5px]">Nodal Officer Contact Details</div>
+                  <div className="bg-[#0b0f19] p-2 rounded-lg border border-[#1f2937] space-y-1.5 text-[10.5px]">
+                    <div className="flex items-center gap-1.5 text-white">
                       <span className="material-symbols-outlined text-xs text-[#06b6d4]">mail</span>
                       <span className="truncate">{currentCase.nodalEmail}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white">
+                    <div className="flex items-center gap-1.5 text-white">
                       <span className="material-symbols-outlined text-xs text-[#06b6d4]">call</span>
                       <span>{currentCase.nodalPhone}</span>
                     </div>
@@ -868,20 +860,20 @@ export default function CleanModernSlateCommandCenter() {
                 </div>
 
                 {/* Statutory Preview Summary */}
-                <div className="p-2.5 bg-[#0b0f19] border border-[#1f2937] rounded-lg text-[10px] font-mono text-[#9ca3af] space-y-1">
+                <div className="p-2 bg-[#0b0f19] border border-[#1f2937] rounded-lg text-[9.5px] font-mono text-[#9ca3af] space-y-0.5">
                   <div className="flex justify-between text-white font-bold">
                     <span>Section 91 & 102 CrPC</span>
                     <span className="text-emerald-400">Sec 65B Certified</span>
                   </div>
                   <div className="truncate">Ref: {currentCase.ncrpRef}</div>
-                  <div className="text-[#06b6d4]">
+                  <div className="text-[#06b6d4] truncate">
                     Evidence Seal: {currentCase.traceHash.substring(0, 14)}...
                   </div>
                 </div>
 
                 {/* Dispatched alert confirmation */}
                 {freezeNoticeDispatched && (
-                  <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[11px] font-mono text-emerald-400 flex items-center gap-2">
+                  <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-sm">check_circle</span>
                     Freeze Notice dispatched to {currentCase.nodalEmail}!
                   </div>
@@ -890,36 +882,36 @@ export default function CleanModernSlateCommandCenter() {
             )}
           </div>
 
-            {/* Statutory Action Buttons */}
-            <div className="space-y-2 pt-4 border-t border-[#1f2937]">
-              <button
-                onClick={handleDispatchFreeze}
-                className="w-full py-2.5 bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b0f19] font-mono font-bold text-xs rounded-lg transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-sm">gavel</span>
-                Section 91/102 CrPC Statutory Freeze
-              </button>
+          {/* Statutory Action Buttons */}
+          <div className="space-y-1.5 pt-2.5 border-t border-[#1f2937]">
+            <button
+              onClick={handleDispatchFreeze}
+              className="w-full py-2 bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b0f19] font-mono font-bold text-xs rounded-lg transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-sm">gavel</span>
+              Section 91/102 CrPC Statutory Freeze
+            </button>
 
-              <button
-                onClick={handleDownloadPdf}
-                className="w-full py-2.5 bg-[#0b0f19] hover:bg-[#1f2937] text-[#e2e2e8] hover:text-white border border-[#1f2937] font-mono font-medium text-xs rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-sm text-[#06b6d4]">
-                  picture_as_pdf
-                </span>
-                Download Certified PDF
-              </button>
+            <button
+              onClick={handleDownloadPdf}
+              className="w-full py-2 bg-[#0b0f19] hover:bg-[#1f2937] text-[#e2e2e8] hover:text-white border border-[#1f2937] font-mono font-medium text-xs rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-sm text-[#06b6d4]">
+                picture_as_pdf
+              </span>
+              Download Certified PDF
+            </button>
 
-              <button
-                onClick={handleExportJson}
-                className="w-full py-2 bg-transparent hover:bg-[#0b0f19] text-[#9ca3af] hover:text-white font-mono text-[11px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1"
-              >
-                <span className="material-symbols-outlined text-xs">file_download</span>
-                Export Case Audit Dossier
-              </button>
-            </div>
+            <button
+              onClick={handleExportJson}
+              className="w-full py-1.5 bg-transparent hover:bg-[#0b0f19] text-[#9ca3af] hover:text-white font-mono text-[10px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1"
+            >
+              <span className="material-symbols-outlined text-xs">file_download</span>
+              Export Case Audit Dossier
+            </button>
+          </div>
         </section>
-      </div>
+      </main>
     </div>
   );
 }
